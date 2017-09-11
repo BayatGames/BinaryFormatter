@@ -1,2 +1,3 @@
 # BinaryFormatter
-Easy, Fast and Lightweight Binary Formatter. (Serializer and Deserializer)
+
+BinaryFormatter is an Fast, Lightweight Binary serialization/deserialization library for Unity projects.
