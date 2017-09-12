@@ -140,21 +140,28 @@ namespace BayatGames.Serialization.Formatters.Binary
 			}
 		}
 
-		public static byte[] Serialize ( object value )
+		public static byte[] SerializeObject ( object value )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();
 			return formatter.Serialize ( value );
 		}
 
-		public static void Serialize ( Stream output, object value )
+		public static void SerializeObject ( Stream output, object value )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();
 			formatter.Serialize ( output, value );
 		}
 
-		public static object Deserialize ( byte [] buffer, object value )
+		public static object DeserializeObject ( byte [] buffer, Type type )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();
+			return formatter.Deserialize ( buffer, type );
+		}
+
+		public static object DeserializeObject ( Stream input, Type type )
+		{
+			BinaryFormatter formatter = new BinaryFormatter ();
+			return formatter.Deserialize ( input, type );
 		}
 
 		#endregion

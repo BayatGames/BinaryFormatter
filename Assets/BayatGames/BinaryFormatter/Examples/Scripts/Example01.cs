@@ -13,10 +13,6 @@ namespace BayatGames.Serialization.Formatters.Binary
 		// Use this for initialization
 		void Start ()
 		{
-			BinaryFormatter formatter = new BinaryFormatter ();
-			formatter.Serialize ( stream );
-			Debug.Log ( Encoding.UTF8.GetString ( stream.ToArray () ) );
-			stream.Dispose ();
 		}
 	
 		// Update is called once per frame
