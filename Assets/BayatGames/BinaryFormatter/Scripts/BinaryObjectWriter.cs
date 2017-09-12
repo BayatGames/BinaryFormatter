@@ -8,6 +8,9 @@ using System.Reflection;
 namespace BayatGames.Serialization.Formatters.Binary
 {
 
+	/// <summary>
+	/// Binary object writer.
+	/// </summary>
 	public class BinaryObjectWriter : IDisposable
 	{
 
@@ -228,10 +231,12 @@ namespace BayatGames.Serialization.Formatters.Binary
 						}
 					}
 				}
-				else if ( value is IEnumerable )
+				else if ( value is IEnumerable && value is ICollection )
 				{
 					IEnumerable enumerable = value as IEnumerable;
+					ICollection collection = value as ICollection;
 					IEnumerator e = enumerable.GetEnumerator ();
+					m_Writer.Write ( collection.Count );
 					while ( e.MoveNext () )
 					{
 						Write ( e.Current );
@@ -273,6 +278,7 @@ namespace BayatGames.Serialization.Formatters.Binary
 		{
 			FieldInfo [] fields = type.GetFields ();
 			PropertyInfo [] properties = type.GetProperties ();
+			Write ( fields.Length );
 			for ( int i = 0; i < fields.Length; i++ )
 			{
 				if ( fields [ i ].IsPublic && !fields [ i ].IsStatic && !fields [ i ].IsLiteral && !fields [ i ].IsNotSerialized )
@@ -281,6 +287,7 @@ namespace BayatGames.Serialization.Formatters.Binary
 					Write ( fields [ i ].GetValue ( value ) );
 				}
 			}
+			Write ( properties.Length );
 			for ( int i = 0; i < properties.Length; i++ )
 			{
 				if ( properties [ i ].CanRead && properties [ i ].CanWrite )
@@ -317,7 +324,10 @@ namespace BayatGames.Serialization.Formatters.Binary
 		/// that the <see cref="BayatGames.Serialization.Formatters.Binary.BinaryObjectWriter"/> was occupying.</remarks>
 		public virtual void Dispose ()
 		{
-			
+			if ( m_Writer != null )
+			{
+				m_Writer.Close ();
+			}
 		}
 
 		#endregion

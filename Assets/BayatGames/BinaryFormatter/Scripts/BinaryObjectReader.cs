@@ -8,6 +8,9 @@ using System.Reflection;
 namespace BayatGames.Serialization.Formatters.Binary
 {
 
+	/// <summary>
+	/// Binary object reader.
+	/// </summary>
 	public class BinaryObjectReader : IDisposable
 	{
 
@@ -134,6 +137,198 @@ namespace BayatGames.Serialization.Formatters.Binary
 			{
 				result = null;
 			}
+			else if ( type.IsPrimitive || type == typeof ( string ) || type == typeof ( decimal ) )
+			{
+				if ( type == typeof ( string ) )
+				{
+					result = m_Reader.ReadString ();
+				}
+				else if ( type == typeof ( decimal ) )
+				{
+					result = m_Reader.ReadDecimal ();
+				}
+				else if ( type == typeof ( short ) )
+				{
+					result = m_Reader.ReadInt16 ();
+				}
+				else if ( type == typeof ( int ) )
+				{
+					result = m_Reader.ReadInt32 ();
+				}
+				else if ( type == typeof ( long ) )
+				{
+					result = m_Reader.ReadInt64 ();
+				}
+				else if ( type == typeof ( ushort ) )
+				{
+					result = m_Reader.ReadUInt16 ();
+				}
+				else if ( type == typeof ( uint ) )
+				{
+					result = m_Reader.ReadUInt32 ();
+				}
+				else if ( type == typeof ( ulong ) )
+				{
+					result = m_Reader.ReadUInt64 ();
+				}
+				else if ( type == typeof ( double ) )
+				{
+					result = m_Reader.ReadDouble ();
+				}
+				else if ( type == typeof ( float ) )
+				{
+					result = m_Reader.ReadSingle ();
+				}
+				else if ( type == typeof ( byte ) )
+				{
+					result = m_Reader.ReadByte ();
+				}
+				else if ( type == typeof ( sbyte ) )
+				{
+					result = m_Reader.ReadSByte ();
+				}
+				else if ( type == typeof ( char ) )
+				{
+					result = m_Reader.ReadChar ();
+				}
+				else if ( type == typeof ( bool ) )
+				{
+					result = m_Reader.ReadBoolean ();
+				}
+			}
+			else if ( type.IsEnum )
+			{
+				result = Enum.Parse ( type, m_Reader.ReadString () );
+			}
+			else if ( type.IsArray )
+			{
+				Type elementType = type.GetElementType ();
+				int rank = m_Reader.ReadInt32 ();
+				int [] lengths = new int[rank];
+				for ( int i = 0; i < rank; i++ )
+				{
+					lengths [ i ] = m_Reader.ReadInt32 ();
+				}
+				Array array = Array.CreateInstance ( elementType, lengths );
+				int [] indices = new int[rank];
+				for ( int i = 0; i < rank; i++ )
+				{
+					for ( int j = 0; j < lengths [ i ]; j++ )
+					{
+						indices [ i ] = j;
+						array.SetValue ( Read ( elementType ), lengths );
+					}
+				}
+				result = array;
+			}
+			else if ( type.IsGenericType && type.GetGenericTypeDefinition () == typeof ( KeyValuePair<,> ) )
+			{
+				PropertyInfo key = type.GetProperty ( "Key" );
+				PropertyInfo value = type.GetProperty ( "Value" );
+				key.SetValue ( result, Read ( key.PropertyType ), BindingFlags.Default, null, null, null );
+				value.SetValue ( result, Read ( value.PropertyType ), BindingFlags.Default, null, null, null );
+			}
+			else if ( type.IsGenericType && type.GetGenericTypeDefinition () == typeof ( List<> ) )
+			{
+				Type [] genericArgs = type.GetGenericArguments ();
+				IList list = ( IList )type.GetConstructor ( Type.EmptyTypes ).Invoke ( null );
+				int length = m_Reader.ReadInt32 ();
+				for ( int i = 0; i < length; i++ )
+				{
+					list.Add ( Read ( genericArgs [ 0 ] ) );
+				}
+				result = list;
+			}
+			else if ( type.IsGenericType && type.GetGenericTypeDefinition () == typeof ( Dictionary<,> ) )
+			{
+				Type [] genericArgs = type.GetGenericArguments ();
+				IDictionary dictionary = ( IDictionary )type.GetConstructor ( Type.EmptyTypes ).Invoke ( null );
+				int length = m_Reader.ReadInt32 ();
+				for ( int i = 0; i < length; i++ )
+				{
+					dictionary.Add ( Read ( genericArgs [ 0 ] ), Read ( genericArgs [ 1 ] ) );
+				}
+				result = dictionary;
+			}
+			else
+			{
+				result = ReadObject ( type );
+			}
+			if ( result is IDeserializationCallback )
+			{
+				( result as IDeserializationCallback ).OnDeserialization ( this );
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Reads the object.
+		/// </summary>
+		/// <returns>The object.</returns>
+		/// <param name="type">Type.</param>
+		protected virtual object ReadObject ( Type type )
+		{
+			object result = null;
+			if ( type.IsValueType )
+			{
+				result = Activator.CreateInstance ( type );
+			}
+			else
+			{
+				result = FormatterServices.GetUninitializedObject ( type );
+			}
+			ISurrogateSelector selector = null;
+			SerializationInfo info = null;
+			ISerializationSurrogate surrogate = null;
+			if ( m_SurrogateSelector != null )
+			{
+				surrogate = m_SurrogateSelector.GetSurrogate ( type, m_Context, out selector );
+				if ( surrogate != null )
+				{
+					info = new SerializationInfo ( type, new FormatterConverter () );
+				}
+			}
+			if ( result != null )
+			{
+				int length = m_Reader.ReadInt32 ();
+				for ( int i = 0; i < length; i++ )
+				{
+					string name = m_Reader.ReadString ();
+					FieldInfo field = type.GetField ( name );
+					if ( field != null )
+					{
+						if ( info != null )
+						{
+							info.AddValue ( name, Read ( field.FieldType ), field.FieldType );
+						}
+						else
+						{
+							field.SetValue ( result, Read ( field.FieldType ) );
+						}
+					}
+				}
+				length = m_Reader.ReadInt32 ();
+				for ( int i = 0; i < length; i++ )
+				{
+					string name = m_Reader.ReadString ();
+					PropertyInfo property = type.GetProperty ( name );
+					if ( property != null )
+					{
+						if ( info != null )
+						{
+							info.AddValue ( name, Read ( property.PropertyType ), property.PropertyType );
+						}
+						else
+						{
+							property.SetValue ( result, Read ( property.PropertyType ), BindingFlags.Default, null, null, null );
+						}
+					}
+				}
+			}
+			if ( surrogate != null )
+			{
+				surrogate.SetObjectData ( result, info, m_Context, selector );
+			}
 			return result;
 		}
 
@@ -149,6 +344,10 @@ namespace BayatGames.Serialization.Formatters.Binary
 		/// that the <see cref="BayatGames.Serialization.Formatters.Binary.BinaryObjectReader"/> was occupying.</remarks>
 		public virtual void Dispose ()
 		{
+			if ( m_Reader != null )
+			{
+				m_Reader.Close ();
+			}
 		}
 
 		#endregion

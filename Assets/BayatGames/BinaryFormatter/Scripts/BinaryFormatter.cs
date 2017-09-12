@@ -7,6 +7,10 @@ using System.Runtime.Serialization;
 namespace BayatGames.Serialization.Formatters.Binary
 {
 
+	/// <summary>
+	/// Binary formatter.
+	/// Serialize and Deserialize binary representations.
+	/// </summary>
 	public class BinaryFormatter
 	{
 
@@ -85,6 +89,19 @@ namespace BayatGames.Serialization.Formatters.Binary
 		#region Methods
 
 		/// <summary>
+		/// Serialize the specified value.
+		/// </summary>
+		/// <param name="value">Value.</param>
+		public byte[] Serialize ( object value )
+		{
+			using ( MemoryStream output = new MemoryStream () )
+			{
+				Serialize ( output );
+				return output.ToArray ();
+			}
+		}
+
+		/// <summary>
 		/// Serialize the specified output and value.
 		/// </summary>
 		/// <param name="output">Output.</param>
@@ -93,6 +110,20 @@ namespace BayatGames.Serialization.Formatters.Binary
 		{
 			using ( BinaryObjectWriter writer = new BinaryObjectWriter ( output, m_SurrogateSelector, m_Context ) )
 			{
+				writer.Write ( value );
+			}
+		}
+
+		/// <summary>
+		/// Deserialize the specified buffer and type.
+		/// </summary>
+		/// <param name="buffer">Buffer.</param>
+		/// <param name="type">Type.</param>
+		public object Deserialize ( byte [] buffer, Type type )
+		{
+			using ( MemoryStream input = new MemoryStream ( buffer ) )
+			{
+				return Deserialize ( input, type );
 			}
 		}
 
@@ -107,6 +138,23 @@ namespace BayatGames.Serialization.Formatters.Binary
 			{
 				return reader.Read ( type );
 			}
+		}
+
+		public static byte[] Serialize ( object value )
+		{
+			BinaryFormatter formatter = new BinaryFormatter ();
+			return formatter.Serialize ( value );
+		}
+
+		public static void Serialize ( Stream output, object value )
+		{
+			BinaryFormatter formatter = new BinaryFormatter ();
+			formatter.Serialize ( output, value );
+		}
+
+		public static object Deserialize ( byte [] buffer, object value )
+		{
+			BinaryFormatter formatter = new BinaryFormatter ();
 		}
 
 		#endregion
