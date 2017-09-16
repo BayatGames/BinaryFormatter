@@ -96,7 +96,7 @@ namespace BayatGames.Serialization.Formatters.Binary
 		{
 			using ( MemoryStream output = new MemoryStream () )
 			{
-				Serialize ( output );
+				Serialize ( output, value );
 				return output.ToArray ();
 			}
 		}
@@ -112,6 +112,26 @@ namespace BayatGames.Serialization.Formatters.Binary
 			{
 				writer.Write ( value );
 			}
+		}
+
+		/// <summary>
+		/// Deserialize the specified input.
+		/// </summary>
+		/// <param name="input">Input.</param>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
+		public T Deserialize<T> ( Stream input )
+		{
+			return ( T )Deserialize ( input, typeof ( T ) );
+		}
+
+		/// <summary>
+		/// Deserialize the specified buffer.
+		/// </summary>
+		/// <param name="buffer">Buffer.</param>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
+		public T Deserialize<T> ( byte [] buffer )
+		{
+			return ( T )Deserialize ( buffer, typeof ( T ) );
 		}
 
 		/// <summary>
@@ -140,24 +160,46 @@ namespace BayatGames.Serialization.Formatters.Binary
 			}
 		}
 
+		/// <summary>
+		/// Serializes the object.
+		/// </summary>
+		/// <returns>The object.</returns>
+		/// <param name="value">Value.</param>
 		public static byte[] SerializeObject ( object value )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();
 			return formatter.Serialize ( value );
 		}
 
+		/// <summary>
+		/// Serializes the object.
+		/// </summary>
+		/// <param name="output">Output.</param>
+		/// <param name="value">Value.</param>
 		public static void SerializeObject ( Stream output, object value )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();
 			formatter.Serialize ( output, value );
 		}
 
+		/// <summary>
+		/// Deserializes the object.
+		/// </summary>
+		/// <returns>The object.</returns>
+		/// <param name="buffer">Buffer.</param>
+		/// <param name="type">Type.</param>
 		public static object DeserializeObject ( byte [] buffer, Type type )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();
 			return formatter.Deserialize ( buffer, type );
 		}
 
+		/// <summary>
+		/// Deserializes the object.
+		/// </summary>
+		/// <returns>The object.</returns>
+		/// <param name="input">Input.</param>
+		/// <param name="type">Type.</param>
 		public static object DeserializeObject ( Stream input, Type type )
 		{
 			BinaryFormatter formatter = new BinaryFormatter ();

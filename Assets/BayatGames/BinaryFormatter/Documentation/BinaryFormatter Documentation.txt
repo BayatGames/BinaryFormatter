@@ -1,0 +1,44 @@
+﻿BinaryFormatter
+BinaryFormatter is an Fast, Lightweight Binary serialization/deserialization library for Unity projects.
+
+
+Features
+* Serializing Collections: Lists, Dictionaries, IEnumerable
+* Serializing KeyValuePair
+* Serializing ISerializable
+* Serializing Multi-Dimensional Arrays
+* Surrogate Serialization
+* Serializing Almost anything (Automatically serializes public fields and properties)
+* Deserializing IDeserializationCallback
+* Fast and Helpful Customer Support
+* Free & Open Source
+* Easy to Use
+* Cross Platform (Let us know if you have any problem with any platform)
+Getting Started
+Just add
+using BayatGames.Serialization.Formatters.Binary;
+then you are ready to go.
+JsonFormatter provides some static methods for fast serialization of objects to json string:
+
+
+using BayatGames.Serialization.Formatters.Binary;
+
+
+...
+
+
+Byte[] buffer = BinaryFormatter.SerializeObject ("Hello World");
+
+
+Resources
+* Bayat Games at GitHub
+* Bayat Games at Unity Asset Store
+* Support
+Thanks
+Thanks for your choice and awesomeness, show your support by rating our products and reviewing them.
+
+
+Hope you enjoy it.
+
+
+Made with 💗 by Bayat Games

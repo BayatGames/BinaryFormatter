@@ -87,7 +87,7 @@ namespace BayatGames.Serialization.Formatters.Binary
 		/// Initializes a new instance of the <see cref="BayatGames.Serialization.Formatters.Binary.BinaryObjectWriter"/> class.
 		/// </summary>
 		/// <param name="stream">Stream.</param>
-		public BinaryObjectWriter ( Stream stream ) : this ( stream, null, new StreamingContext ( StreamingContextStates.All ) )
+		public BinaryObjectWriter ( Stream stream ) : this ( new BinaryWriter ( stream ), null, new StreamingContext ( StreamingContextStates.All ) )
 		{
 		}
 
@@ -202,9 +202,13 @@ namespace BayatGames.Serialization.Formatters.Binary
 				{
 					m_Writer.Write ( value.ToString () );
 				}
-				else if ( type.IsSerializable && !( value is ISerializable ) && !type.IsArray )
+				else if ( type == typeof ( DateTime ) )
 				{
-					WriteObject ( value, type );
+					m_Writer.Write ( ( ( DateTime )value ).ToBinary () );
+				}
+				else if ( type == typeof ( TimeSpan ) )
+				{
+					m_Writer.Write ( ( ( TimeSpan )value ).ToString () );
 				}
 				else if ( value is ISerializable )
 				{
@@ -212,6 +216,10 @@ namespace BayatGames.Serialization.Formatters.Binary
 					ISerializable serializable = value as ISerializable;
 					serializable.GetObjectData ( info, m_Context );
 					WriteSerializationInfo ( info );
+				}
+				else if ( type.IsSerializable && !type.IsArray )
+				{
+					WriteObject ( value, type );
 				}
 				else if ( type.IsArray )
 				{

@@ -127,6 +127,15 @@ namespace BayatGames.Serialization.Formatters.Binary
 		#region Methods
 
 		/// <summary>
+		/// Read this instance.
+		/// </summary>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
+		public virtual T Read<T> ()
+		{
+			return ( T )Read ( typeof ( T ) );
+		}
+
+		/// <summary>
 		/// Read the specified type.
 		/// </summary>
 		/// <param name="type">Type.</param>
@@ -200,6 +209,14 @@ namespace BayatGames.Serialization.Formatters.Binary
 			{
 				result = Enum.Parse ( type, m_Reader.ReadString () );
 			}
+			else if ( type == typeof ( DateTime ) )
+			{
+				result = DateTime.FromBinary ( m_Reader.ReadInt64 () );
+			}
+			else if ( type == typeof ( TimeSpan ) )
+			{
+				result = TimeSpan.Parse ( m_Reader.ReadString () );
+			}
 			else if ( type.IsArray )
 			{
 				Type elementType = type.GetElementType ();
@@ -216,7 +233,7 @@ namespace BayatGames.Serialization.Formatters.Binary
 					for ( int j = 0; j < lengths [ i ]; j++ )
 					{
 						indices [ i ] = j;
-						array.SetValue ( Read ( elementType ), lengths );
+						array.SetValue ( Read ( elementType ), indices );
 					}
 				}
 				result = array;
