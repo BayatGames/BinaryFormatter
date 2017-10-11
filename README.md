@@ -5,7 +5,7 @@ BinaryFormatter is an Fast, Lightweight Binary serialization/deserialization lib
 ## Download
 
 - [:sparkles: Download latest version](https://github.com/BayatGames/BinaryFormatter/releases/latest)
-- Asset Store is pending review
+- [:fire: Download from Asset Store](https://www.assetstore.unity3d.com/#!/content/100459?aid=1101l3ncK)
 
 ## Features
 
